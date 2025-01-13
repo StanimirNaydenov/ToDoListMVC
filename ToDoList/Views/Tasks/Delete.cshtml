@@ -1,0 +1,34 @@
+﻿@model ToDoList.Models.ToDoItem
+
+@{
+    ViewData["Title"] = "Delete Task";
+}
+
+<h1>Delete Task</h1>
+
+<div>
+    <h4>Are you sure you want to delete this task?</h4>
+    <div>
+        <strong>Title:</strong> @Model.Title
+    </div>
+    <div>
+        <strong>Is Completed:</strong> @Model.IsCompleted
+    </div>
+    <div>
+        <strong>Category:</strong> @Model.Category?.Name
+    </div>
+
+    <div>
+        <strong>Due Date:</strong> @Model.DueDate.ToString("yyyy-MM-dd")
+    </div>
+    <div>
+        <strong>Notes:</strong> @Model.Notes
+    </div>
+
+</div>
+
+<form asp-action="DeleteConfirmed" method="post">
+    <input type="hidden" asp-for="ToDoItemId" />
+    <button type="submit" class="btn btn-danger">Delete</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>
