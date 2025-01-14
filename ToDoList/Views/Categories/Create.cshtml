@@ -4,16 +4,17 @@
     ViewData["Title"] = "Create Category";
 }
 
-<h1>Create Category</h1>
+<h1>Създаване на нова категория</h1>
 
 <form asp-action="Create">
+    @Html.AntiForgeryToken()
     <div class="form-group">
-        <label asp-for="Name" class="control-label"></label>
+        <label asp-for="Name" class="control-label">Име</label>
         <input asp-for="Name" class="form-control" />
         <span asp-validation-for="Name" class="text-danger"></span>
     </div>
-    <button type="submit" class="btn btn-primary">Save</button>
-    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+    <button type="submit" class="btn btn-primary">Запази</button>
+    <a asp-action="IndexCategory" class="btn btn-secondary">Отказ</a>
 </form>
 
 @section Scripts {

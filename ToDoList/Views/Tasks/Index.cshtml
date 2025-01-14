@@ -4,21 +4,23 @@
     ViewData["Title"] = "Tasks";
 }
 
-<h1>Tasks</h1>
+<h1>Задачи</h1>
 
 <p>
-    <a asp-action="Create" class="btn btn-primary">Create New Task</a>
+    <a asp-action="Create" class="btn btn-primary">Създай нова задача</a>
 </p>
+@Html.AntiForgeryToken()
+
 
 <table class="table table-striped">
     <thead>
         <tr>
-            <th>Title</th>
-            <th>Is Completed</th>
-            <th>Category</th>
-            <th>Due Date</th>
-            <th>Notes</th>
-            <th></th>
+            <th>Заглавие</th>
+            <th>Завършена</th>
+            <th>Категория</th>
+            <th>Дата</th>
+            <th>Бележки</th>
+            <th>Действие</th>
         </tr>
     </thead>
     <tbody>
@@ -31,10 +33,12 @@
                 <td>@item.DueDate.ToString("yyyy-MM-dd")</td>
                 <td>@item.Notes</td>
                 <td>
-                    <a asp-action="Edit" asp-route-id="@item.ToDoItemId" class="btn btn-warning btn-sm">Edit</a>
-                    <a asp-action="Delete" asp-route-id="@item.ToDoItemId" class="btn btn-danger btn-sm">Delete</a>
+                    <a asp-action="Edit" asp-route-id="@item.ToDoItemId" class="btn btn-warning btn-sm">Редактирай</a>
+                    <a asp-action="Delete" asp-route-id="@item.ToDoItemId" class="btn btn-danger btn-sm">Изтрий</a>
                 </td>
             </tr>
         }
     </tbody>
 </table>
+
+

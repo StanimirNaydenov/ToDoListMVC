@@ -38,16 +38,43 @@ namespace ToDoList.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(ToDoItem toDoItem)
         {
+            // Проверка за валидност на модела
             if (ModelState.IsValid)
             {
-                _context.ToDoItems.Add(toDoItem);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                ViewBag.Categories = new SelectList(_context.Categories, "CategoryId", "Name", toDoItem.CategoryId);
+                return View(toDoItem); // Връщане на формата с грешките
             }
 
+            try
+            {
+                
+
+                // Добавяне на задачата към контекста
+                _context.ToDoItems.Add(toDoItem);
+                await _context.SaveChangesAsync(); // Асинхронно запазване в базата
+
+                // Пренасочване към Index при успех
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                // Логване на грешката (ако възникне)
+                Console.WriteLine($"Error while saving to-do item: {ex.Message}");
+                ModelState.AddModelError("", "An error occurred while saving the to-do item.");
+            }
+
+            // Ако възникне грешка, връща формата с въведените данни
             ViewBag.Categories = new SelectList(_context.Categories, "CategoryId", "Name", toDoItem.CategoryId);
             return View(toDoItem);
         }
+
+        // Метод за получаване на текущия потребител (пример)
+        private int GetCurrentUserId()
+        {
+            return 1; // Примерен потребителски ID
+        }
+
+
 
         // GET: Tasks/Edit/5
         public async Task<IActionResult> Edit(int? id)
@@ -66,26 +93,48 @@ namespace ToDoList.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, ToDoItem toDoItem)
         {
-            if (id != toDoItem.ToDoItemId) return NotFound();
+            if (id != toDoItem.ToDoItemId)
+            {
+                return NotFound();
+            }
 
             if (ModelState.IsValid)
             {
-                try
+                ViewBag.Categories = new SelectList(_context.Categories, "CategoryId", "Name", toDoItem.CategoryId);
+                return View(toDoItem); // Връщане на формата с грешките
+            }
+
+            try
+            {
+                
+
+                _context.Update(toDoItem);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!TaskExists(toDoItem.ToDoItemId))
                 {
-                    _context.Update(toDoItem);
-                    await _context.SaveChangesAsync();
+                    return NotFound();
                 }
-                catch (DbUpdateConcurrencyException)
+                else
                 {
-                    if (!TaskExists(toDoItem.ToDoItemId)) return NotFound();
                     throw;
                 }
-                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error while updating to-do item: {ex.Message}");
+                ModelState.AddModelError("", "An error occurred while updating the to-do item.");
             }
 
             ViewBag.Categories = new SelectList(_context.Categories, "CategoryId", "Name", toDoItem.CategoryId);
             return View(toDoItem);
         }
+
+      
+
 
         // GET: Tasks/Delete/5
         public async Task<IActionResult> Delete(int? id)
@@ -105,7 +154,10 @@ namespace ToDoList.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var task = await _context.ToDoItems.FindAsync(id);
+            var task = await _context.ToDoItems
+                .Include(t => t.Category) // Включване на свързаната категория
+                .FirstOrDefaultAsync(t => t.ToDoItemId == id);
+
             if (task != null)
             {
                 _context.ToDoItems.Remove(task);
@@ -113,6 +165,7 @@ namespace ToDoList.Controllers
             }
             return RedirectToAction(nameof(Index));
         }
+
 
         private bool TaskExists(int id)
         {

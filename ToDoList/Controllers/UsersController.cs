@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using ToDoList.Data;
 using ToDoList.Models;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Model;
 
 namespace ToDoList.Controllers
 {
@@ -31,14 +33,32 @@ namespace ToDoList.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Create(User user)
         {
+
+            // Проверка за валидност на модела
             if (ModelState.IsValid)
             {
+                return View(user); // Връщане на формата с грешките
+            }
+            try
+            {
+                // Добавяне на потребителя към контекста
                 _context.Users.Add(user);
                 _context.SaveChanges();
+
+                // Пренасочване към Index при успех
                 return RedirectToAction(nameof(Index));
             }
+            catch (Exception ex)
+            {
+                // Логване на грешката (ако е нужно)
+                Console.WriteLine(ex.Message);
+                ModelState.AddModelError("", "An error occurred while saving the user.");
+            }
+
+            // Ако възникне грешка, връща формата с въведените данни
             return View(user);
         }
+
 
         // GET: Users/Edit/5
         public IActionResult Edit(int id)
@@ -54,21 +74,50 @@ namespace ToDoList.Controllers
         // POST: Users/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(int id, User user)
+        public async Task<IActionResult> Edit(int id, User user)
         {
             if (id != user.UserId)
             {
-                return NotFound();
+                return NotFound(); // Ако ID не съвпада, връща 404
             }
 
             if (ModelState.IsValid)
             {
-                _context.Update(user);
-                _context.SaveChanges();
+                return View(user); // Връщане на формата с грешките
+            }
+
+            try
+            {
+                // Обновяване на записа в базата данни
+                _context.Users.Update(user);
+                await _context.SaveChangesAsync(); // Асинхронно запазване
+
+                // Пренасочване към Index след успешно обновяване
                 return RedirectToAction(nameof(Index));
             }
+            catch (DbUpdateConcurrencyException)
+            {
+                // Проверка дали записът все още съществува
+                if (!_context.Users.Any(e => e.UserId == id))
+                {
+                    return NotFound(); // Ако потребителят не съществува
+                }
+                else
+                {
+                    throw; // Ако е друга грешка, хвърля отново изключението
+                }
+            }
+            catch (Exception ex)
+            {
+                // Логване на други потенциални грешки
+                Console.WriteLine($"Error while updating user: {ex.Message}");
+                ModelState.AddModelError("", "An error occurred while updating the user.");
+            }
+
+            // Връща изгледа с въведените данни в случай на грешка
             return View(user);
         }
+
 
         // GET: Users/Delete/5
         public IActionResult Delete(int id)
@@ -82,17 +131,28 @@ namespace ToDoList.Controllers
         }
 
         // POST: Users/Delete/5
-        [HttpPost, ActionName("Delete")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult DeleteConfirmed(int id)
+        public IActionResult ConfirmDelete(int id)
         {
-            var user = _context.Users.Find(id);
+            var user = _context.Users
+                .Include(u => u.Categories) // Ако има свързани категории
+                .FirstOrDefault(u => u.UserId == id);
+
             if (user != null)
             {
-                _context.Users.Remove(user);
+                // Проверка дали има свързани категории
+                if (user.Categories != null && user.Categories.Any())
+                {
+                    _context.Categories.RemoveRange(user.Categories); // Премахни свързаните категории
+                }
+
+                _context.Users.Remove(user); // Премахни потребителя
                 _context.SaveChanges();
             }
             return RedirectToAction(nameof(Index));
         }
+
+
     }
 }

@@ -4,17 +4,16 @@
     ViewData["Title"] = "Categories";
 }
 
-<h1>Categories</h1>
+<h1>Категорий</h1>
 
 <p>
-    <a asp-action="Create" class="btn btn-primary">Create New Category</a>
+    <a asp-action="Create" class="btn btn-primary">Създай нова категория</a>
 </p>
-
 <table class="table">
     <thead>
         <tr>
-            <th>Name</th>
-            <th>Actions</th>
+            <th>Име</th>
+            <th>Действие</th>
         </tr>
     </thead>
     <tbody>
@@ -23,8 +22,8 @@
             <tr>
                 <td>@category.Name</td>
                 <td>
-                    <a asp-action="Edit" asp-route-id="@category.CategoryId" class="btn btn-warning">Edit</a>
-                    <a asp-action="Delete" asp-route-id="@category.CategoryId" class="btn btn-danger">Delete</a>
+                    <a asp-action="Edit" asp-route-id="@category.CategoryId" class="btn btn-warning">Редактирай</a>
+                    <a asp-action="Delete" asp-route-id="@category.CategoryId" class="btn btn-danger">Изтрий</a>
                 </td>
             </tr>
         }
