@@ -131,26 +131,30 @@ namespace ToDoList.Controllers
         }
 
         // POST: Users/Delete/5
-        [HttpPost]
+        [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public IActionResult ConfirmDelete(int id)
+        public async Task<IActionResult> ConfirmDelete(int id)
         {
-            var user = _context.Users
-                .Include(u => u.Categories) // Ако има свързани категории
-                .FirstOrDefault(u => u.UserId == id);
+            var user = await _context.Users
+                .Include(u => u.Categories)  // Ако потребителят има свързани категории
+                .FirstOrDefaultAsync(u => u.UserId == id);
 
             if (user != null)
             {
-                // Проверка дали има свързани категории
+                // Премахване на свързаните категории (ако има такива)
                 if (user.Categories != null && user.Categories.Any())
                 {
-                    _context.Categories.RemoveRange(user.Categories); // Премахни свързаните категории
+                    _context.Categories.RemoveRange(user.Categories); // Премахване на свързаните категории
                 }
 
-                _context.Users.Remove(user); // Премахни потребителя
-                _context.SaveChanges();
+                // Премахваме потребителя
+                _context.Users.Remove(user);
+
+                // Записваме промените в базата данни
+                await _context.SaveChangesAsync();
             }
-            return RedirectToAction(nameof(Index));
+
+            return RedirectToAction(nameof(Index)); // Пренасочване обратно към списъка с потребители
         }
 
 
