@@ -138,22 +138,30 @@ namespace ToDoList.Controllers
             var user = await _context.Users
                 .Include(u => u.Categories)  // Ако потребителят има свързани категории
                 .FirstOrDefaultAsync(u => u.UserId == id);
-
-            if (user != null)
+            try
             {
-                // Премахване на свързаните категории (ако има такива)
-                if (user.Categories != null && user.Categories.Any())
+                if (user != null)
                 {
-                    _context.Categories.RemoveRange(user.Categories); // Премахване на свързаните категории
+                    // Премахваме свързаните категории
+                    if (user.Categories != null && user.Categories.Any())
+                    {
+                        _context.Categories.RemoveRange(user.Categories);
+                    }
+
+                    // Премахваме потребителя
+                    _context.Users.Remove(user);
+
+                    // Записваме промените в базата данни
+                    await _context.SaveChangesAsync();
                 }
-
-                // Премахваме потребителя
-                _context.Users.Remove(user);
-
-                // Записваме промените в базата данни
-                await _context.SaveChangesAsync();
             }
-
+            catch (Exception ex)
+            {
+                // Логваме грешката
+                _logger.LogError($"Error while deleting user: {ex.Message}");
+                ModelState.AddModelError("", "An error occurred while deleting the user.");
+            }
+            
             return RedirectToAction(nameof(Index)); // Пренасочване обратно към списъка с потребители
         }
 
