@@ -131,39 +131,7 @@ namespace ToDoList.Controllers
         }
 
         // POST: Users/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ConfirmDelete(int id)
-        {
-            var user = await _context.Users
-                .Include(u => u.Categories)  // Ако потребителят има свързани категории
-                .FirstOrDefaultAsync(u => u.UserId == id);
-            try
-            {
-                if (user != null)
-                {
-                    // Премахваме свързаните категории
-                    if (user.Categories != null && user.Categories.Any())
-                    {
-                        _context.Categories.RemoveRange(user.Categories);
-                    }
-
-                    // Премахваме потребителя
-                    _context.Users.Remove(user);
-
-                    // Записваме промените в базата данни
-                    await _context.SaveChangesAsync();
-                }
-            }
-            catch (Exception ex)
-            {
-                // Логваме грешката
-                _logger.LogError($"Error while deleting user: {ex.Message}");
-                ModelState.AddModelError("", "An error occurred while deleting the user.");
-            }
-            
-            return RedirectToAction(nameof(Index)); // Пренасочване обратно към списъка с потребители
-        }
+        
 
 
     }
