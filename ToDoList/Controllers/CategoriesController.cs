@@ -30,6 +30,7 @@ namespace ToDoList.Controllers
             return View();
         }
 
+
         // POST: Categories/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -144,19 +145,35 @@ namespace ToDoList.Controllers
         // POST: Categories/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public async Task<IActionResult> Delete(int id)
         {
             var category = await _context.Categories
-                .Include(c => c.User) // Include the related User entity
+                .Include(c => c.ToDoItems) // Зареждане на свързаните задачи
                 .FirstOrDefaultAsync(c => c.CategoryId == id);
 
             if (category != null)
             {
+                // Проверка дали категорията има свързани задачи
+                if (category.ToDoItems != null && category.ToDoItems.Any())
+                {
+                    // Добавяне на съобщение за грешка
+                    TempData["ErrorMessage"] = "Категорията не може да бъде изтрита, защото съдържа свързани задачи.";
+                    return RedirectToAction(nameof(Index)); // Връщане към Index
+                }
+
+                // Ако няма свързани задачи, изтриваме категорията
                 _context.Categories.Remove(category);
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(); // Записване на промените
             }
-            return RedirectToAction(nameof(Index), "Categories");
+            else
+            {
+                TempData["ErrorMessage"] = "Категорията не е намерена.";
+            }
+
+            return RedirectToAction(nameof(Index));
         }
+
+
 
         private bool CategoryExists(int id)
         {

@@ -152,11 +152,11 @@ namespace ToDoList.Controllers
         // POST: Tasks/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public async Task<IActionResult> Delete(int id)
         {
             var task = await _context.ToDoItems
-                .Include(t => t.Category) // Включване на свързаната категория
-                .FirstOrDefaultAsync(t => t.ToDoItemId == id);
+                 .Include(t => t.Category) // Включване на свързаната категория
+                 .FirstOrDefaultAsync(t => t.ToDoItemId == id);
 
             if (task != null)
             {

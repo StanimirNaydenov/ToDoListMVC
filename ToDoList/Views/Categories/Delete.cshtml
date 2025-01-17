@@ -6,6 +6,7 @@
 
 <h1>Изтриване на категория</h1>
 
+
 <div>
     <h4>Сигурни ли сте, че искате да изтриете тази категория?</h4>
     <hr />
@@ -15,7 +16,7 @@
     </dl>
 </div>
 
-<form asp-action="DeleteConfirmed" method="post">
+<form asp-action="Delete" method="post">
     <input type="hidden" asp-for="CategoryId" />
     <button type="submit" class="btn btn-danger">Изтрий</button>
     <a asp-action="Index" class="btn btn-secondary">Отказ</a>

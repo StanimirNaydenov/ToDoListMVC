@@ -1,9 +1,13 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using ToDoList.Data;
+using ToDoList.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
@@ -27,12 +31,21 @@ app.UseRouting();
 
 app.UseAuthorization();
 
-app.UseEndpoints(endpoints =>
-{
-    endpoints.MapControllerRoute(
-        name: "default",
-        pattern: "{controller=Tasks}/{action=Index}/{id?}");
-});
+app.MapControllerRoute(
+    name: "users",
+    pattern: "Users/{action=Index}/{id?}",
+    defaults: new { controller = "User" });
+
+app.MapControllerRoute(
+    name: "categories",
+    pattern: "Categories/{action=Index}/{id?}",
+    defaults: new { controller = "Categories" });
+
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Tasks}/{action=Index}/{id?}");
+
+
 
 
 app.Run();
