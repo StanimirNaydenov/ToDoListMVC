@@ -131,27 +131,37 @@ namespace ToDoList.Controllers
         }
 
         // POST: Users/Delete/5
-        [HttpPost]
+        [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public IActionResult ConfirmDelete(int id)
+public IActionResult DeleteCo(int id)
+{
+    if (id == 1)
+    {
+        TempData["ErrorMessage"] = "Администраторът не може да бъде изтрит.";
+        return RedirectToAction(nameof(Index));
+    }
+
+    var user = _context.Users
+        .Include(u => u.Categories)  // Ако потребителят има свързани категории
+        .FirstOrDefault(u => u.UserId == id);
+
+    if (user != null)
+    {
+        // Премахваме свързаните категории
+        if (user.Categories != null && user.Categories.Any())
         {
-            var user = _context.Users
-                .Include(u => u.Categories) // Ако има свързани категории
-                .FirstOrDefault(u => u.UserId == id);
-
-            if (user != null)
-            {
-                // Проверка дали има свързани категории
-                if (user.Categories != null && user.Categories.Any())
-                {
-                    _context.Categories.RemoveRange(user.Categories); // Премахни свързаните категории
-                }
-
-                _context.Users.Remove(user); // Премахни потребителя
-                _context.SaveChanges();
-            }
-            return RedirectToAction(nameof(Index));
+            _context.Categories.RemoveRange(user.Categories);
         }
+
+        // Премахваме потребителя
+        _context.Users.Remove(user);
+
+        // Записваме промените в базата данни
+        _context.SaveChanges();
+    }
+
+    return RedirectToAction(nameof(Index)); // Пренасочване обратно към списъка с потребители
+}
 
 
 
