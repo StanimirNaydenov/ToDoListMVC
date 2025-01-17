@@ -131,37 +131,26 @@ namespace ToDoList.Controllers
         }
 
         // POST: Users/Delete/5
-        [HttpPost, ActionName("Delete")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteCo (int id)
+        public IActionResult ConfirmDelete(int id)
         {
-            if (id == 1) 
+            var user = _context.Users
+                .Include(u => u.Categories) // Ако има свързани категории
+                .FirstOrDefault(u => u.UserId == id);
+
+            if (user != null)
             {
-                TempData["ErrorMessage"] = "Администраторът не може да бъде изтрит.";
-                return RedirectToAction(nameof(Index));
+                // Проверка дали има свързани категории
+                if (user.Categories != null && user.Categories.Any())
+                {
+                    _context.Categories.RemoveRange(user.Categories); // Премахни свързаните категории
+                }
+
+                _context.Users.Remove(user); // Премахни потребителя
+                _context.SaveChanges();
             }
-            var user = await _context.Users
-                .Include(u => u.Categories)  // Ако потребителят има свързани категории
-                .FirstOrDefaultAsync(u => u.UserId == id);
-
-             if (user != null)
-             {
-                    // Премахваме свързаните категории
-                    if (user.Categories != null && user.Categories.Any())
-                    {
-                        _context.Categories.RemoveRange(user.Categories);
-                    }
-
-                    // Премахваме потребителя
-                    _context.Users.Remove(user);
-
-                    // Записваме промените в базата данни
-                    await _context.SaveChangesAsync();
-             }
-            
-         
-
-            return RedirectToAction(nameof(Index)); // Пренасочване обратно към списъка с потребители
+            return RedirectToAction(nameof(Index));
         }
 
 
